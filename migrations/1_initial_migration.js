@@ -19,7 +19,7 @@ module.exports = async function (deployer) {
   };
 
   // Dev comments - For development closing time is set to 30 days
-  const latestTime = (new Date).getTime();
+  const latestTime = Math.floor(new Date().getTime() / 1000);
   const _openingTime = latestTime + duration.minutes(1);
   const _closingTime = _openingTime + duration.days(30);
 
@@ -27,5 +27,6 @@ module.exports = async function (deployer) {
   await deployer.deploy(TokenSale, 1, "0x0000000000000000000000000000000000000000", token.address, vesting.address, _openingTime, _closingTime);
   const crowdsale = await TokenSale.deployed();
 
-  await token.transfer(crowdsale.address, await token.totalSupply())
+  const totalSupply = await token.totalSupply();
+  await token.transfer(crowdsale.address, (totalSupply * 50 / 100).toString());
 };

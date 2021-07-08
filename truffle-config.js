@@ -73,8 +73,8 @@ module.exports = {
     // production: true    // Treats this network as if it was a public net. (default: false)
     // }
     testnet: {
-      networkCheckTimeout: 10000000000,
-      provider: () => new HDWalletProvider(mnemonic, `https://data-seed-prebsc-1-s1.binance.org:8545`),
+      networkCheckTimeout: 10000000,
+      provider: () => new HDWalletProvider(mnemonic, `wss://data-seed-prebsc-1-s1.binance.org:8545`),
       network_id: 97,
       gas: 25000000,
       skipDryRun: true

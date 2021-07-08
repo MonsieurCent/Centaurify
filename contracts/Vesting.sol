@@ -25,8 +25,6 @@ contract VestingVault is Ownable {
     
     mapping (address => Grant) private tokenGrants;
 
-    uint256 public totalVestingCount;
-
     address public crowdsale_address;
 
     constructor(BEP20 _token) public {
@@ -34,7 +32,7 @@ contract VestingVault is Ownable {
         token = _token;
     }
 
-    function addCrowdsaleAddress(address crowdsaleAddress) external {
+    function addCrowdsaleAddress(address crowdsaleAddress) external onlyOwner {
         crowdsale_address = crowdsaleAddress;
     }
     
@@ -54,7 +52,7 @@ contract VestingVault is Ownable {
         require(amountVestedPerMonth > 0, "amountVestedPerMonth > 0");
 
         Grant memory grant = Grant({
-            startTime: currentTime().add(_lockDurationInMonths.mul(1 minutes)),
+            startTime: currentTime().add(_lockDurationInMonths.mul(30 days)),
             amount: _amount,
             vestingDuration: _vestingDurationInMonths,
             monthsClaimed: 0,
@@ -139,7 +137,7 @@ contract VestingVault is Ownable {
         // For example: lock duration of 0 and current time at day 1, counts as elapsed month of 1
         // Lock duration of 1 month and current time at day 31, counts as elapsed month of 2
         // This is to accomplish the design that the first batch of vested tokens are claimable immediately after unlock.
-        uint256 elapsedMonths = currentTime().sub(tokenGrant.startTime).div(5 minutes).add(1); 
+        uint256 elapsedMonths = currentTime().sub(tokenGrant.startTime).div(30 days).add(1); 
      
         // If over vesting duration, all tokens vested
         if (elapsedMonths >= tokenGrant.vestingDuration) {

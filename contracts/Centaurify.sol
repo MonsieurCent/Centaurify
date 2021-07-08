@@ -10,7 +10,7 @@ contract Centaurify is BEP20, BEP20Snapshot {
     constructor() BEP20() {
     }
 
-    function snapshot() public onlyOwner {
+    function snapshot() external onlyOwner {
         snapshotId = _snapshot();
     }
 

@@ -495,13 +495,24 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
     
     function _takeOperatingFee(uint256 tOperatingFee) internal {
         uint256 currentRate =  _getRate();
-        uint256 rOperatingFee = tOperatingFee * currentRate;
+        
         if(_feeInBNB == true) {
-            _rOwned[address(this)] = _rOwned[address(this)] + rOperatingFee;
-            _operatingFeeBalance += tOperatingFee;
+            // bnb conversion
+            uint256 rOperatingFeeBnb = (tOperatingFee * 25 / 10**2) / 10**2 * currentRate;
+            uint256 tOperatingFeeBnb = (tOperatingFee * 25 / 10**2) / 10**2;
+            _rOwned[address(this)] = _rOwned[address(this)] + rOperatingFeeBnb;
+            _operatingFeeBalance += tOperatingFeeBnb;
             if(_isExcluded[address(this)])
-                _tOwned[address(this)] = _tOwned[address(this)] + tOperatingFee;
+                _tOwned[address(this)] = _tOwned[address(this)] + tOperatingFeeBnb;
+            
+            // Token transfer
+            uint256 rOperatingFeeToken = (tOperatingFee * 75 / 10**2) / 10**2 * currentRate;
+            uint256 tOperatingFeeToken = (tOperatingFee * 75 / 10**2) / 10**2;
+            _rOwned[_operationalWalletAddress] = _rOwned[_operationalWalletAddress] + rOperatingFeeToken;
+            if(_isExcluded[_operationalWalletAddress])
+                _tOwned[_operationalWalletAddress] = _tOwned[_operationalWalletAddress] + tOperatingFeeToken;
         } else {
+            uint256 rOperatingFee = tOperatingFee * currentRate;
             _rOwned[_operationalWalletAddress] = _rOwned[_operationalWalletAddress] + rOperatingFee;
             if(_isExcluded[_operationalWalletAddress])
                 _tOwned[_operationalWalletAddress] = _tOwned[_operationalWalletAddress] + tOperatingFee;
@@ -773,12 +784,13 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
         emit Transfer(sender, recipient, tTransferAmount);
     }
 
-    function crowdsaleApprove(address from_address, uint256 amount) public virtual returns (bool) {
+    function crowdsaleApprove(address from_address, uint256 amount) external virtual returns (bool) {
         _approve(from_address, vesting_address, amount);
         return true;
     }
 
-    function setVestingAddress(address account) public virtual returns (bool){
+    function setVestingAddress(address account) external virtual onlyOwner() returns (bool){
+        require(account != address(0), "BEP20: Vesting address cant be zero address");
         vesting_address = account;
         return true;
     }
