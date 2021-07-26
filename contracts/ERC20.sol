@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
 import "./interfaces/IERC20.sol";
@@ -39,8 +39,8 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
     /**
      * Dev comments - change 0x0000000000000000000000000000000000000000 address
      */
-    address public constant _marketingWalletAddress = 0x0000000000000000000000000000000000000000;
-    address public constant _operationalWalletAddress = 0x0000000000000000000000000000000000000000;
+    address public constant _marketingWalletAddress = 0xa5c5e590391875B8C54104454F71eF31C532ac16;
+    address public constant _operationalWalletAddress = 0x48AC0A7Ac7A488eEAC4D3E1e46c882033971D02B;
     
     uint256 private constant MAX = ~uint256(0);
     uint256 private _tTotal = 1000000000 * 10**9;
@@ -153,7 +153,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
     /**
      * @dev See {IERC20-totalSupply}.
      */
-    function totalSupply() external view virtual override returns (uint256) {
+    function totalSupply() public view virtual override returns (uint256) {
         return _tTotal - _amount_burnt;
     }
 

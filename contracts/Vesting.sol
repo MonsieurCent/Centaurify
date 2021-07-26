@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
 import "./ERC20.sol";
@@ -50,7 +50,7 @@ contract VestingVault is Ownable {
         require(_lockDurationInMonths <= 10*12, "Lock greater than 10 years");
         require(_amount != 0, "Grant amount cannot be 0");
         uint256 amountVestedPerMonth = _amount.div(_vestingDurationInMonths);
-        require(amountVestedPerMonth > 0, "amountVestedPerMonth > 0");
+        require(amountVestedPerMonth > 0, "amountVestedPerMonth < 0");
 
         Grant memory grant = Grant({
             startTime: currentTime().add(_lockDurationInMonths.mul(30 days)),

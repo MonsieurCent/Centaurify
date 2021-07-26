@@ -7,8 +7,12 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "compile": "truffle compile"
+    "test": "truffle test",
+    "compile": "truffle compile",
+    "migrate": "truffle migrate",
+    "predeploy": "yarn run compile",
+    "deploy": "yarn run migrate",
+    "verify": "truffle run verify Centaurify VestingVault TokenSale"
   },
   "author": "",
   "license": "ISC",
