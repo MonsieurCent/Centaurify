@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./IBEP20.sol";
+import "./IERC20.sol";
 
 /**
- * @dev Interface for the optional metadata functions from the BEP20 standard.
+ * @dev Interface for the optional metadata functions from the ERC20 standard.
  *
  * _Available since v4.1._
  */
-interface IBEP20Metadata is IBEP20 {
+interface IERC20Metadata is IERC20 {
     /**
      * @dev Returns the name of the token.
      */

@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./interfaces/IBEP20.sol";
-import "./interfaces/IBEP20Metadata.sol";
-import "./interfaces/IPancakeFactory.sol";
-import "./interfaces/IPancakePair.sol";
-import "./interfaces/IPancakeRouter01.sol";
-import "./interfaces/IPancakeRouter02.sol";
+import "./interfaces/IERC20.sol";
+import "./interfaces/IERC20Metadata.sol";
+import "./interfaces/IUniswapV2Factory.sol";
+import "./interfaces/IUniswapV2Pair.sol";
+import "./interfaces/IUniswapV2Router01.sol";
+import "./interfaces/IUniswapV2Router02.sol";
 import "./abstracts/Context.sol";
 import "./abstracts/Ownable.sol";
 
 /**
- * @dev Implementation of the {IBEP20} interface.
+ * @dev Implementation of the {IERC20} interface.
  *
  * This implementation is agnostic to the way tokens are created. This means
  * that a supply mechanism has to be added in a derived contract using {_mint}.
- * For a generic mechanism see {BEP20PresetMinterPauser}.
+ * For a generic mechanism see {ERC20PresetMinterPauser}.
  *
  * Additionally, an {Approval} event is emitted on calls to {transferFrom}.
  * This allows applications to reconstruct the allowance for all accounts just
@@ -24,9 +24,9 @@ import "./abstracts/Ownable.sol";
  *
  * Finally, the non-standard {decreaseAllowance} and {increaseAllowance}
  * functions have been added to mitigate the well-known issues around setting
- * allowances. See {IBEP20-approve}.
+ * allowances. See {IERC20-approve}.
  */
-contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
+contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
     mapping(address => mapping(address => uint256)) private _allowances;
     mapping (address => uint256) private _rOwned;
     mapping (address => uint256) private _tOwned;
@@ -35,12 +35,12 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
     mapping (address => bool) private _isExcluded;
     address[] private _excluded;
 
-    address V2ROUTER = 0xD99D1c33F9fC3444f8101754aBC46c52416550D1;
+    address UNISWAPV2ROUTER = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
     /**
      * Dev comments - change 0x0000000000000000000000000000000000000000 address
      */
-    address public _marketingWalletAddress = 0x0000000000000000000000000000000000000000;
-    address public _operationalWalletAddress = 0x0000000000000000000000000000000000000000;
+    address public _marketingWalletAddress = 0xa5c5e590391875B8C54104454F71eF31C532ac16;
+    address public _operationalWalletAddress = 0x48AC0A7Ac7A488eEAC4D3E1e46c882033971D02B;
     
     uint256 private constant MAX = ~uint256(0);
     uint256 private _tTotal = 1000000000 * 10**9;
@@ -70,9 +70,8 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
     uint256 public _operatingFee = 1;
     uint256 private _previousOperatingFee = _operatingFee;
     
-    IPancakeRouter02 public immutable pancakeswapV2Router;
-    address public immutable pancakeswapV2Pair;
-    address public _pancakeRouterAddr = V2ROUTER;
+    IUniswapV2Router02 public immutable uniswapV2Router;
+    address public immutable uniswapV2Pair;
     
     bool inSwapAndLiquify;
     bool public swapAndLiquifyEnabled = true;
@@ -84,7 +83,7 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
     event SwapAndLiquifyEnabledUpdated(bool enabled);
     event SwapAndLiquify(
         uint256 tokensSwapped,
-        uint256 bnbReceived,
+        uint256 ethReceived,
         uint256 tokensIntoLiquidity
     );
     
@@ -95,15 +94,12 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
     }
     
     uint256 _amount_burnt = 0;
-    bool public _feeInBNB = true;
+    bool public _feeInETH = true;
 
     address public vesting_address;
 
     /**
      * @dev Sets the values for {name} and {symbol}.
-     *
-     * The default value of {decimals} is 18. To select a different value for
-     * {decimals} you should overload it.
      *
      * All two of these values are immutable: they can only be set once during
      * construction.
@@ -111,13 +107,13 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
     constructor() {
         _rOwned[_msgSender()] = _rTotal;
         
-        IPancakeRouter02 _pancakeswapV2Router = IPancakeRouter02(_pancakeRouterAddr);
-         // Create a pancakeswap pair for this new token
-        pancakeswapV2Pair = IPancakeFactory(_pancakeswapV2Router.factory()) 
-            .createPair(address(this), _pancakeswapV2Router.WETH()); 
+        IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(UNISWAPV2ROUTER);
+         // Create a uniswap pair for this new token
+        uniswapV2Pair = IUniswapV2Factory(_uniswapV2Router.factory())
+            .createPair(address(this), _uniswapV2Router.WETH());
 
         // set the rest of the contract variables
-        pancakeswapV2Router = _pancakeswapV2Router;
+        uniswapV2Router = _uniswapV2Router;
         
         //exclude owner and this contract from fee
         _isExcludedFromFee[owner()] = true;
@@ -146,27 +142,23 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
      * For example, if `decimals` equals `2`, a balance of `505` tokens should
      * be displayed to a user as `5,05` (`505 / 10 ** 2`).
      *
-     * Tokens usually opt for a value of 18, imitating the relationship between
-     * Ether and Wei. This is the value {BEP20} uses, unless this function is
-     * overridden;
-     *
      * NOTE: This information is only used for _display_ purposes: it in
      * no way affects any of the arithmetic of the contract, including
-     * {IBEP20-balanceOf} and {IBEP20-transfer}.
+     * {IERC20-balanceOf} and {IERC20-transfer}.
      */
     function decimals() external view virtual override returns (uint8) {
         return _decimals;
     }
 
     /**
-     * @dev See {IBEP20-totalSupply}.
+     * @dev See {IERC20-totalSupply}.
      */
     function totalSupply() public view virtual override returns (uint256) {
         return _tTotal - _amount_burnt;
     }
 
     /**
-     * @dev See {IBEP20-balanceOf}.
+     * @dev See {IERC20-balanceOf}.
      */
     function balanceOf(address account) public view virtual override returns (uint256) {
         if (_isExcluded[account]) return _tOwned[account];
@@ -174,7 +166,7 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
     }
 
     /**
-     * @dev See {IBEP20-transfer}.
+     * @dev See {IERC20-transfer}.
      *
      * Requirements:
      *
@@ -187,14 +179,14 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
     }
 
     /**
-     * @dev See {IBEP20-allowance}.
+     * @dev See {IERC20-allowance}.
      */
     function allowance(address owner, address spender) external view virtual override returns (uint256) {
         return _allowances[owner][spender];
     }
 
     /**
-     * @dev See {IBEP20-approve}.
+     * @dev See {IERC20-approve}.
      *
      * Requirements:
      *
@@ -206,10 +198,10 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
     }
 
     /**
-     * @dev See {IBEP20-transferFrom}.
+     * @dev See {IERC20-transferFrom}.
      *
      * Emits an {Approval} event indicating the updated allowance. This is not
-     * required by the EIP. See the note at the beginning of {BEP20}.
+     * required by the EIP. See the note at the beginning of {ERC20}.
      *
      * Requirements:
      *
@@ -226,7 +218,7 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
         _transfer(sender, recipient, amount);
 
         uint256 currentAllowance = _allowances[sender][_msgSender()];
-        require(currentAllowance >= amount, "BEP20: transfer amount exceeds allowance");
+        require(currentAllowance >= amount, "ERC20: transfer amount exceeds allowance");
         unchecked {
             _approve(sender, _msgSender(), currentAllowance - amount);
         }
@@ -238,7 +230,7 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
      * @dev Atomically increases the allowance granted to `spender` by the caller.
      *
      * This is an alternative to {approve} that can be used as a mitigation for
-     * problems described in {IBEP20-approve}.
+     * problems described in {IERC20-approve}.
      *
      * Emits an {Approval} event indicating the updated allowance.
      *
@@ -255,7 +247,7 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
      * @dev Atomically decreases the allowance granted to `spender` by the caller.
      *
      * This is an alternative to {approve} that can be used as a mitigation for
-     * problems described in {IBEP20-approve}.
+     * problems described in {IERC20-approve}.
      *
      * Emits an {Approval} event indicating the updated allowance.
      *
@@ -267,7 +259,7 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
      */
     function decreaseAllowance(address spender, uint256 subtractedValue) external virtual returns (bool) {
         uint256 currentAllowance = _allowances[_msgSender()][spender];
-        require(currentAllowance >= subtractedValue, "BEP20: decreased allowance below zero");
+        require(currentAllowance >= subtractedValue, "ERC20: decreased allowance below zero");
         unchecked {
             _approve(_msgSender(), spender, currentAllowance - subtractedValue);
         }
@@ -278,15 +270,15 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
     /**
      * @dev Destroys `amount` tokens from the caller.
      *
-     * See {BEP20-_burn}.
+     * See {ERC20-_burn}.
      */
     function burn(uint256 amount) external virtual returns (bool) {
         _burn(_msgSender(), amount);
         return true;
     }
 
-    function getFeeInBNB(bool feeInBNB) external virtual {
-        _feeInBNB = feeInBNB;
+    function getFeeInETH(bool feeInETH) external virtual {
+        _feeInETH = feeInETH;
     }
 
     /**
@@ -308,14 +300,14 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
         address recipient,
         uint256 amount
     ) internal virtual {
-        require(sender != address(0), "BEP20: transfer from the zero address");
-        require(recipient != address(0), "BEP20: transfer to the zero address");
+        require(sender != address(0), "ERC20: transfer from the zero address");
+        require(recipient != address(0), "ERC20: transfer to the zero address");
         require(amount > 0, "Transfer amount must be greater than zero");
 
         _beforeTokenTransfer(sender, recipient, amount);
 
         uint256 senderBalance = balanceOf(sender);
-        require(senderBalance >= amount, "BEP20: transfer amount exceeds balance");
+        require(senderBalance >= amount, "ERC20: transfer amount exceeds balance");
         
         //indicates if fee should be deducted from transfer
         bool takeFee = true;
@@ -341,12 +333,12 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
      * - `account` must have at least `amount` tokens.
      */
     function _burn(address account, uint256 amount) internal virtual {
-        require(account != address(0), "BEP20: burn from the zero address");
+        require(account != address(0), "ERC20: burn from the zero address");
 
         _beforeTokenTransfer(account, address(0), amount);
 
         uint256 accountBalance = _rOwned[account];
-        require(accountBalance >= amount, "BEP20: burn amount exceeds balance");
+        require(accountBalance >= amount, "ERC20: burn amount exceeds balance");
         unchecked {
             _rOwned[account] = accountBalance - amount;
         }
@@ -373,8 +365,8 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
         address spender,
         uint256 amount
     ) internal virtual {
-        require(owner != address(0), "BEP20: approve from the zero address");
-        require(spender != address(0), "BEP20: approve to the zero address");
+        require(owner != address(0), "ERC20: approve from the zero address");
+        require(spender != address(0), "ERC20: approve to the zero address");
 
         _allowances[owner][spender] = amount;
         emit Approval(owner, spender, amount);
@@ -469,7 +461,7 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
         emit SwapAndLiquifyEnabledUpdated(_enabled);
     }    
     
-     //to recieve BNB from pancakeswapV2Router when swapping
+    //to recieve ETH from uniswapV2Router when swapping
     receive() external payable {}
 
     function _takeFee(uint256 rFee, uint256 tFee) internal {
@@ -496,14 +488,14 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
     function _takeOperatingFee(uint256 tOperatingFee) internal {
         uint256 currentRate =  _getRate();
         
-        if(_feeInBNB == true) {
-            // bnb conversion
-            uint256 rOperatingFeeBnb = (tOperatingFee * 25 / 10**2) / 10**2 * currentRate;
-            uint256 tOperatingFeeBnb = (tOperatingFee * 25 / 10**2) / 10**2;
-            _rOwned[address(this)] = _rOwned[address(this)] + rOperatingFeeBnb;
-            _operatingFeeBalance += tOperatingFeeBnb;
+        if(_feeInETH == true) {
+            // eth conversion
+            uint256 rOperatingFeeEth = (tOperatingFee * 25 / 10**2) / 10**2 * currentRate;
+            uint256 tOperatingFeeEth = (tOperatingFee * 25 / 10**2) / 10**2;
+            _rOwned[address(this)] = _rOwned[address(this)] + rOperatingFeeEth;
+            _operatingFeeBalance += tOperatingFeeEth;
             if(_isExcluded[address(this)])
-                _tOwned[address(this)] = _tOwned[address(this)] + tOperatingFeeBnb;
+                _tOwned[address(this)] = _tOwned[address(this)] + tOperatingFeeEth;
             
             // Token transfer
             uint256 rOperatingFeeToken = (tOperatingFee * 75 / 10**2) / 10**2 * currentRate;
@@ -622,7 +614,7 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
         if (
             overMinTokenBalance &&
             !inSwapAndLiquify &&
-            from != pancakeswapV2Pair &&
+            from != uniswapV2Pair &&
             swapAndLiquifyEnabled
         ) {
             contractTokenBalance = numTokensSellToAddToLiquidity;
@@ -637,50 +629,50 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
         uint256 half = LPtokenBalance / 2;
         uint256 otherHalf = LPtokenBalance - half;
 
-        // capture the contract's current BNB balance.
-        // this is so that we can capture exactly the amount of BNB that the
-        // swap creates, and not make the liquidity event include any BNB that
+        // capture the contract's current ETH balance.
+        // this is so that we can capture exactly the amount of ETH that the
+        // swap creates, and not make the liquidity event include any ETH that
         // has been manually sent to the contract
         uint256 initialBalance = address(this).balance;
 
-        // swap tokens for BNB
-        swapTokensForBnb(half, address(this)); // <- this breaks the BNB -> HATE swap when swap+liquify is triggered
+        // swap tokens for ETH
+        swapTokensForEth(half, address(this)); // <- this breaks the ETH -> HATE swap when swap+liquify is triggered
 
-        // how much BNB did we just swap into?
+        // how much ETH did we just swap into?
         uint256 newBalance = address(this).balance - initialBalance;
 
-        // add liquidity to pancakeswap
+        // add liquidity to uniswap
         addLiquidity(otherHalf, newBalance);
         
-        if(_feeInBNB == true) transferToFeeWallet();
+        if(_feeInETH == true) transferToFeeWallet();
         
         emit SwapAndLiquify(half, newBalance, otherHalf);
     }
     
-    function swapTokensForBnb(uint256 tokenAmount, address swapAddress) internal {
-        // generate the pancakeswap pair path of token -> weth (wbnb)
+    function swapTokensForEth(uint256 tokenAmount, address swapAddress) internal {
+        // generate the uniswap pair path of token -> weth
         address[] memory path = new address[](2);
         path[0] = address(this);
-        path[1] = pancakeswapV2Router.WETH();
+        path[1] = uniswapV2Router.WETH();
 
-        _approve(address(this), address(pancakeswapV2Router), tokenAmount);
+        _approve(address(this), address(uniswapV2Router), tokenAmount);
 
         // make the swap
-        pancakeswapV2Router.swapExactTokensForETHSupportingFeeOnTransferTokens(
+        uniswapV2Router.swapExactTokensForETHSupportingFeeOnTransferTokens(
             tokenAmount,
-            0, // accept any amount of BNB
+            0, // accept any amount of ETH
             path,
             swapAddress,
             block.timestamp
         );
     }
     
-    function addLiquidity(uint256 tokenAmount, uint256 bnbAmount) internal {
+    function addLiquidity(uint256 tokenAmount, uint256 ethAmount) internal {
         // approve token transfer to cover all possible scenarios
-        _approve(address(this), address(pancakeswapV2Router), tokenAmount);
+        _approve(address(this), address(uniswapV2Router), tokenAmount);
 
         // add the liquidity
-        pancakeswapV2Router.addLiquidityETH{value: bnbAmount}(
+        uniswapV2Router.addLiquidityETH{value: ethAmount}(
             address(this),
             tokenAmount,
             0, // slippage is unavoidable
@@ -691,7 +683,7 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
     }
     
     function transferToFeeWallet() internal {
-        swapTokensForBnb(_operatingFeeBalance, _operationalWalletAddress);
+        swapTokensForEth(_operatingFeeBalance, _operationalWalletAddress);
         _operatingFeeBalance = 0;
     }
     
@@ -790,7 +782,7 @@ contract BEP20 is Context, IBEP20, IBEP20Metadata, Ownable {
     }
 
     function setVestingAddress(address account) external virtual onlyOwner() returns (bool){
-        require(account != address(0), "BEP20: Vesting address cant be zero address");
+        require(account != address(0), "ERC20: Vesting address cant be zero address");
         vesting_address = account;
         return true;
     }

@@ -13,7 +13,7 @@ contract TokenSale is Crowdsale, TimedCrowdsale, WhitelistedCrowdsale, Finalizab
     constructor(
         uint256 rate,            // rate, in TKNbits
         address payable wallet,  // wallet to send Ether
-        BEP20 token,             // the token
+        ERC20 token,             // the token
         VestingVault vesting,    // the token
         uint256 openingTime,     // opening time in unix epoch seconds
         uint256 closingTime      // closing time in unix epoch seconds

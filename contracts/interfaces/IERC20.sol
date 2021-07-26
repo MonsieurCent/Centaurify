@@ -2,9 +2,9 @@
 pragma solidity ^0.8.0;
 
 /**
- * @dev Interface of the BEP20 standard as defined in the EIP.
+ * @dev Interface of the ERC20 standard as defined in the EIP.
  */
-interface IBEP20 {
+interface IERC20 {
     /**
      * @dev Returns the amount of tokens in existence.
      */

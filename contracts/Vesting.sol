@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./BEP20.sol";
+import "./ERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./abstracts/Ownable.sol";
 
@@ -21,13 +21,13 @@ contract VestingVault is Ownable {
     event GrantTokensClaimed(address indexed recipient, uint256 amountClaimed);
     event GrantRevoked(address recipient, uint256 amountVested, uint256 amountNotVested);
 
-    BEP20 immutable public token;
+    ERC20 immutable public token;
     
     mapping (address => Grant) private tokenGrants;
 
     address public crowdsale_address;
 
-    constructor(BEP20 _token) public {
+    constructor(ERC20 _token) public {
         require(address(_token) != address(0));
         token = _token;
     }
