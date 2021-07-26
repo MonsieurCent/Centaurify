@@ -22,7 +22,7 @@ abstract contract FinalizableCrowdsale is TimedCrowdsale, Ownable {
    * @dev Must be called after crowdsale ends, to do some extra finalization
    * work. Calls the contract's finalization function.
    */
-  function finalize() onlyOwner public {
+  function finalize() onlyOwner external {
     require(!isFinalized);
     require(hasClosed());
 

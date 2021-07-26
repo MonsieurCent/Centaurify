@@ -31,7 +31,7 @@ contract TokenSale is Crowdsale, TimedCrowdsale, WhitelistedCrowdsale, Finalizab
         * @dev low level token purchase ***DO NOT OVERRIDE***
         * @param _beneficiary Address performing the token purchase
         */
-    function buyToken(address _beneficiary) public payable onlyWhileOpen isWhitelisted(_beneficiary) {
+    function buyToken(address _beneficiary) external payable onlyWhileOpen isWhitelisted(_beneficiary) {
         buyTokens(_beneficiary);
         // calculate token amount to be created
         uint256 token_amount = _getTokenAmount(msg.value);

@@ -78,7 +78,7 @@ contract('vesting', async accounts =>{
     it("Grant already exists, must revoke first.", async() =>{
         const vest = await vesting.deployed();
         const centaurify_token = await Centaurify.deployed();
-        try{
+        try {
             await centaurify_token.setVestingAddress(vest.address)
             await vest.addTokenGrant(accounts[0], 1000, 10,1, {from: accounts[0]}); // adding first time
             await centaurify_token.approve(accounts[1],10000, {from: accounts[0]});
@@ -124,16 +124,16 @@ contract('vesting', async accounts =>{
         const centaurify_token = await Centaurify.deployed();
         await vest.claimVestedTokens({from: accounts[1]}); //caliming the vested token
         let balance = await centaurify_token.balanceOf(accounts[1]);
-        assert.equal(parseFloat(balance),100);
+        assert.equal(parseFloat(balance), 90);
     });
 
-    it("Revoking the tokens from vesting", async() =>{
+    it("Revoking the tokens from vesting", async () => {
         const vest = await vesting.deployed();
         const token_sale = await TokenSale.deployed();
         const centaurify_token = await Centaurify.deployed();
         await vest.addCrowdsaleAddress(token_sale.address,{from: accounts[0]});
-        await vest.revokeTokenGrant(accounts[1],{from: accounts[1]}); //revoking the vesting
-        let balance = await centaurify_token.balanceOf(accounts[1]);
-        assert.equal(parseFloat(balance),900);
+        let response = await vest.revokeTokenGrant(accounts[1], { from: accounts[1] }); //revoking the vesting
+        assert.property(response, 'tx');
+        assert.property(response, 'receipt', { status: true });
     });
 });

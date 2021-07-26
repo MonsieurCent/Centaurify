@@ -35,12 +35,12 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
     mapping (address => bool) private _isExcluded;
     address[] private _excluded;
 
-    address UNISWAPV2ROUTER = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
+    address constant UNISWAPV2ROUTER = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
     /**
      * Dev comments - change 0x0000000000000000000000000000000000000000 address
      */
-    address public _marketingWalletAddress = 0xa5c5e590391875B8C54104454F71eF31C532ac16;
-    address public _operationalWalletAddress = 0x48AC0A7Ac7A488eEAC4D3E1e46c882033971D02B;
+    address public constant _marketingWalletAddress = 0x0000000000000000000000000000000000000000;
+    address public constant _operationalWalletAddress = 0x0000000000000000000000000000000000000000;
     
     uint256 private constant MAX = ~uint256(0);
     uint256 private _tTotal = 1000000000 * 10**9;
@@ -48,9 +48,9 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
     uint256 private _tFeeTotal;
     uint256 public _operatingFeeBalance;
 
-    string private _name = "Centaurify";
-    string private _symbol = "CENT";
-    uint8 private _decimals = 9;
+    string private constant _name = "Centaurify";
+    string private constant _symbol = "CENT";
+    uint8 private constant _decimals = 9;
     
     /**
      * Fee - 10%
@@ -77,7 +77,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
     bool public swapAndLiquifyEnabled = true;
     
     uint256 public _maxTxAmount = 5000 * 10**9;
-    uint256 private numTokensSellToAddToLiquidity = 10 * 10**9;
+    uint256 private constant numTokensSellToAddToLiquidity = 10 * 10**9;
     
     event MinTokensBeforeSwapUpdated(uint256 minTokensBeforeSwap);
     event SwapAndLiquifyEnabledUpdated(bool enabled);
@@ -153,7 +153,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
     /**
      * @dev See {IERC20-totalSupply}.
      */
-    function totalSupply() public view virtual override returns (uint256) {
+    function totalSupply() external view virtual override returns (uint256) {
         return _tTotal - _amount_burnt;
     }
 

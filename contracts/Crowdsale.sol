@@ -184,7 +184,7 @@ abstract contract Crowdsale {
    * @return Number of tokens that can be purchased with the specified _weiAmount
    */
   function _getTokenAmount(uint256 _weiAmount)
-    public view returns (uint256)
+    internal view returns (uint256)
   {
     return _weiAmount.mul(rate);
   }

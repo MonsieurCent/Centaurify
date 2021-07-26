@@ -106,3 +106,4 @@ dist
 build/
 .secret
 coverage.json
+/.idea/

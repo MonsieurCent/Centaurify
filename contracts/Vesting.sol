@@ -27,12 +27,13 @@ contract VestingVault is Ownable {
 
     address public crowdsale_address;
 
-    constructor(ERC20 _token) public {
+    constructor(ERC20 _token) {
         require(address(_token) != address(0));
         token = _token;
     }
 
     function addCrowdsaleAddress(address crowdsaleAddress) external onlyOwner {
+        require(crowdsaleAddress != address(0), "ERC20: transfer from the zero address");
         crowdsale_address = crowdsaleAddress;
     }
     
@@ -109,12 +110,12 @@ contract VestingVault is Ownable {
         }
     }
 
-    function getGrantStartTime(address _recipient) public view returns(uint256) {
+    function getGrantStartTime(address _recipient) external view returns(uint256) {
         Grant storage tokenGrant = tokenGrants[_recipient];
         return tokenGrant.startTime;
     }
 
-    function getGrantAmount(address _recipient) public view returns(uint256) {
+    function getGrantAmount(address _recipient) external view returns(uint256) {
         Grant storage tokenGrant = tokenGrants[_recipient];
         return tokenGrant.amount;
     }
