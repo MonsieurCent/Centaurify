@@ -27,7 +27,7 @@ contract VestingVault is Ownable {
 
     address public crowdsale_address;
 
-    constructor(ERC20 _token) {
+    constructor(ERC20 _token) public {
         require(address(_token) != address(0));
         token = _token;
     }

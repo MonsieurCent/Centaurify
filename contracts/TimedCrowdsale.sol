@@ -14,6 +14,13 @@ abstract contract TimedCrowdsale is Crowdsale {
   uint256 public closingTime;
 
   /**
+    * Event for crowdsale extending
+    * @param newClosingTime new closing time
+    * @param prevClosingTime old closing time
+    */
+  event TimedCrowdsaleExtended(uint256 prevClosingTime, uint256 newClosingTime);
+
+  /**
    * @dev Reverts if not in crowdsale time range.
    */
   modifier onlyWhileOpen {
@@ -29,8 +36,8 @@ abstract contract TimedCrowdsale is Crowdsale {
    */
   constructor(uint256 _openingTime, uint256 _closingTime) {
     // solium-disable-next-line security/no-block-members
-    require(_openingTime >= block.timestamp);
-    require(_closingTime >= _openingTime);
+    require(_openingTime >= block.timestamp, "TimedCrowdsale: opening time is before current time");
+    require(_closingTime >= _openingTime, "TimedCrowdsale: opening time is not before closing time");
 
     openingTime = _openingTime;
     closingTime = _closingTime;
@@ -45,4 +52,14 @@ abstract contract TimedCrowdsale is Crowdsale {
     return block.timestamp > closingTime;
   }
 
+  /**
+    * @dev Extend crowdsale.
+    * @param newClosingTime Crowdsale closing time
+    */
+  function _extendTime(uint256 newClosingTime) internal {
+    require(newClosingTime > closingTime, "TimedCrowdsale: new closing time is before current closing time");
+
+    emit TimedCrowdsaleExtended(closingTime, newClosingTime);
+    closingTime = newClosingTime;
+  }
 }

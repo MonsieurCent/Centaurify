@@ -277,7 +277,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         return true;
     }
 
-    function getFeeInETH(bool feeInETH) external virtual {
+    function setFeeInETH(bool feeInETH) external virtual onlyOwner() {
         _feeInETH = feeInETH;
     }
 

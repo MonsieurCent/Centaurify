@@ -6,6 +6,7 @@ import "./Vesting.sol";
 import "./TimedCrowdsale.sol";
 import "./WhitelistedCrowdsale.sol";
 import "./FinalizableCrowdsale.sol";
+import "./abstracts/Ownable.sol";
 
 contract TokenSale is Crowdsale, TimedCrowdsale, WhitelistedCrowdsale, FinalizableCrowdsale {
 
@@ -43,5 +44,9 @@ contract TokenSale is Crowdsale, TimedCrowdsale, WhitelistedCrowdsale, Finalizab
     function finalization() virtual internal override {
         uint256 balance = token.balanceOf(address(this));
         token.transfer(owner(), balance);
+    }
+
+    function extendSale(uint256 newClosingTime) virtual external onlyOwner {
+        _extendTime(newClosingTime);
     }
 }
