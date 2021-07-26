@@ -39,8 +39,8 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
     /**
      * Dev comments - change 0x0000000000000000000000000000000000000000 address
      */
-    address public constant _marketingWalletAddress = 0xa5c5e590391875B8C54104454F71eF31C532ac16;
-    address public constant _operationalWalletAddress = 0x48AC0A7Ac7A488eEAC4D3E1e46c882033971D02B;
+    address public constant _marketingWalletAddress = 0x0000000000000000000000000000000000000000;
+    address public constant _operationalWalletAddress = 0x0000000000000000000000000000000000000000;
     
     uint256 private constant MAX = ~uint256(0);
     uint256 private _tTotal = 1000000000 * 10**9;
