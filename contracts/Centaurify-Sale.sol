@@ -49,4 +49,8 @@ contract TokenSale is Crowdsale, TimedCrowdsale, WhitelistedCrowdsale, Finalizab
     function extendSale(uint256 newClosingTime) virtual external onlyOwner {
         _extendTime(newClosingTime);
     }
+
+    function changeRate(uint256 newRate) virtual external onlyOwner {
+        _changeRate(newRate);
+    }
 }

@@ -195,4 +195,12 @@ abstract contract Crowdsale {
   function _forwardFunds() internal {
     payable(wallet).transfer(msg.value);
   }
+
+  /**
+    * @dev Change Rate.
+    * @param newRate Crowdsale rate
+    */
+  function _changeRate(uint256 newRate) virtual internal {
+    rate = newRate;
+  }
 }
