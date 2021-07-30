@@ -1,4 +1,4 @@
-# Centaurify
+# Centaurify ERC20
 
 
 # Local Development
