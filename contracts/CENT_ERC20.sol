@@ -823,4 +823,12 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         tokenContract.transfer(msg.sender, _amount);
         emit ExternalTokenTransfered(_tokenContract,msg.sender, _amount);
     }
+
+    function updateMarketingWallet(address marketingWallet) external onlyOwner {
+        _marketingWalletAddress=marketingWallet;
+    }
+
+    function updateOperationalWallet(address operationalWallet) external onlyOwner {
+        _operationalWalletAddress=operationalWallet;
+    }
 }
