@@ -86,7 +86,17 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         uint256 ethReceived,
         uint256 tokensIntoLiquidity
     );
-    
+    event FeeInEthUpdated(bool status);
+    event ExcludedFromReward(address userAccount);
+    event IncludedInReward(address userAccount);
+    event ExcludedFromFee(address userAccount);
+    event IncludedInFee(address UserAccount);
+    event TaxFeePercentUpdated(uint256 newTaxFeePercent);
+    event LiquidityFeePercentUpdated(uint256 newLiquidityFeePercent);
+    event BurnPercentUpdated(uint256 newBurnPercent);
+    event MarketingFeePercentUpdated(uint256 newMarketingFeePercent);
+    event VestingAddressUpdated(address vestingContractAddress);
+
     modifier lockTheSwap {
         inSwapAndLiquify = true;
         _;
@@ -279,6 +289,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
 
     function setFeeInETH(bool feeInETH) external virtual onlyOwner() {
         _feeInETH = feeInETH;
+        emit FeeInEthUpdated(_feeInETH);
     }
 
     /**
@@ -413,6 +424,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         }
         _isExcluded[account] = true;
         _excluded.push(account);
+        emit ExcludedFromReward(account);
     }
     
     function includeInReward(address account) external onlyOwner() {
@@ -423,6 +435,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
                 _tOwned[account] = 0;
                 _isExcluded[account] = false;
                 _excluded.pop();
+                emit IncludedInReward(account);
                 break;
             }
         }
@@ -430,26 +443,32 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
     
     function excludeFromFee(address account) external onlyOwner {
         _isExcludedFromFee[account] = true;
+        emit ExcludedFromFee(account);
     }
     
     function includeInFee(address account) external onlyOwner {
         _isExcludedFromFee[account] = false;
+        emit IncludedInFee(account);
     }
     
     function setTaxFeePercent(uint256 taxFee) external onlyOwner() {
         _taxFee = taxFee;
+        emit TaxFeePercentUpdated(_taxFee);
     }
     
     function setLiquidityFeePercent(uint256 liquidityFee) external onlyOwner() {
         _liquidityFee = liquidityFee;
+        emit LiquidityFeePercentUpdated(_liquidityFee);
     }
     
     function setBurnPercent(uint256 transactionBurn) external onlyOwner() {
         _transactionBurn = transactionBurn;
+        emit BurnPercentUpdated(_transactionBurn);
     }
     
     function setMarketingFeePercent(uint256 marketingFee) external onlyOwner() {
         _marketingFee = marketingFee;
+        emit MarketingFeePercentUpdated(_marketingFee);
     }
     
     function setMaxTxPercent(uint256 maxTxPercent) external onlyOwner() {
