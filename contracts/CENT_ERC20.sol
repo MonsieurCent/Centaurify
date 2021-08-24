@@ -481,7 +481,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         emit SwapAndLiquifyEnabledUpdated(_enabled);
     }    
     
-    //to recieve ETH from uniswapV2Router when swapping
+    //to receieve ETH from uniswapV2Router when swapping
     receive() external payable {}
 
     function _takeFee(uint256 rFee, uint256 tFee) internal {
