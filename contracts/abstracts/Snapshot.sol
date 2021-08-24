@@ -2,9 +2,10 @@
 
 pragma solidity ^0.8.0;
 
-import "../ERC20.sol";
+//import "../ERC20.sol";
 import "../library/Arrays.sol";
 import "../library/Counters.sol";
+import "../CENT_ERC20.sol";
 
 /**
  * @dev This contract extends an ERC20 token with a snapshot mechanism. When a snapshot is created, the balances and

@@ -98,6 +98,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
     event VestingAddressUpdated(address vestingContractAddress);
     event ExternalTokenTransfered(address externalAddress,address toAddress, uint amount);
     event LiquidityAddedFromSwap(uint amountToken,uint amountEth,uint liquidity);
+    event EthFromContractTransferred(uint amount);
 
     modifier lockTheSwap {
         inSwapAndLiquify = true;
@@ -701,7 +702,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
             owner(),
             block.timestamp
         );
-        emit LiquidityAddedFromSwap(amountToken,amountEth,liquidity);
+        emit LiquidityAddedFromSwap(amountToken,amountETH,liquidity);
     }
     
     function transferToFeeWallet() internal {
@@ -813,22 +814,15 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
 
     function withdrawEthFromContract(uint256 amount) public onlyOwner {
         require(amount <= getBalance());
-        msg.sender.transfer(amount);
+        address payable _owner = payable(owner());
+        _owner.transfer(amount);
         emit EthFromContractTransferred(amount);
     }
 
     function withdrawToken(address _tokenContract, uint256 _amount) external onlyOwner {
-        require(account != address(0), "Address cant be zero address");
+        require(_tokenContract != address(0), "Address cant be zero address");
         IERC20 tokenContract = IERC20(_tokenContract);
         tokenContract.transfer(msg.sender, _amount);
         emit ExternalTokenTransfered(_tokenContract,msg.sender, _amount);
-    }
-
-    function updateMarketingWallet(address marketingWallet) external onlyOwner {
-        _marketingWalletAddress=marketingWallet;
-    }
-
-    function updateOperationalWallet(address operationalWallet) external onlyOwner {
-        _operationalWalletAddress=operationalWallet;
     }
 }
