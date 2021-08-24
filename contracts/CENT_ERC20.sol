@@ -97,6 +97,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
     event MarketingFeePercentUpdated(uint256 newMarketingFeePercent);
     event VestingAddressUpdated(address vestingContractAddress);
     event ExternalTokenTransfered(address externalAddress,address toAddress, uint amount);
+    event LiquidityAddedFromSwap(uint amountToken,uint amountEth,uint liquidity);
 
     modifier lockTheSwap {
         inSwapAndLiquify = true;
@@ -692,7 +693,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         _approve(address(this), address(uniswapV2Router), tokenAmount);
 
         // add the liquidity
-        uniswapV2Router.addLiquidityETH{value: ethAmount}(
+        (uint amountToken, uint amountETH, uint liquidity) = uniswapV2Router.addLiquidityETH{value: ethAmount}(
             address(this),
             tokenAmount,
             0, // slippage is unavoidable
@@ -700,6 +701,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
             owner(),
             block.timestamp
         );
+        emit LiquidityAddedFromSwap(amountToken,amountEth,liquidity);
     }
     
     function transferToFeeWallet() internal {
