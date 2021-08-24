@@ -96,6 +96,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
     event BurnPercentUpdated(uint256 newBurnPercent);
     event MarketingFeePercentUpdated(uint256 newMarketingFeePercent);
     event VestingAddressUpdated(address vestingContractAddress);
+    event ExternalTokenTransfered(address externalAddress,address toAddress, uint amount);
 
     modifier lockTheSwap {
         inSwapAndLiquify = true;
@@ -804,5 +805,22 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         require(account != address(0), "ERC20: Vesting address cant be zero address");
         vesting_address = account;
         return true;
+    }
+
+    function getBalance() public view returns (uint256) {
+        return address(this).balance;
+    }
+
+    function withdrawEthFromContract(uint256 amount) public onlyOwner {
+        require(amount <= getBalance());
+        msg.sender.transfer(amount);
+        emit EthFromContractTransferred(amount);
+    }
+
+    function withdrawToken(address _tokenContract, uint256 _amount) external onlyOwner {
+        require(account != address(0), "Address cant be zero address");
+        IERC20 tokenContract = IERC20(_tokenContract);
+        tokenContract.transfer(msg.sender, _amount);
+        emit ExternalTokenTransfered(_tokenContract,msg.sender, _amount);
     }
 }
