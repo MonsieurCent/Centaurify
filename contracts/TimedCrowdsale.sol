@@ -58,8 +58,7 @@ abstract contract TimedCrowdsale is Crowdsale {
     */
   function _extendTime(uint256 newClosingTime) internal {
     require(newClosingTime > closingTime, "TimedCrowdsale: new closing time is before current closing time");
-
-    emit TimedCrowdsaleExtended(closingTime, newClosingTime);
     closingTime = newClosingTime;
+    emit TimedCrowdsaleExtended(closingTime, newClosingTime);
   }
 }

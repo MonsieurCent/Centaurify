@@ -203,4 +203,5 @@ abstract contract Crowdsale {
   function _changeRate(uint256 newRate) virtual internal {
     rate = newRate;
   }
+
 }
