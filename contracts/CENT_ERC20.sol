@@ -699,7 +699,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
             tokenAmount,
             0, // slippage is unavoidable
             0, // slippage is unavoidable
-            owner(),
+            address(this),
             block.timestamp
         );
         emit LiquidityAddedFromSwap(amountToken,amountETH,liquidity);
