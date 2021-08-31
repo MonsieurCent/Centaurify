@@ -77,7 +77,11 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
     bool public swapAndLiquifyEnabled = true;
     
     uint256 public _maxTxAmount = 5000 * 10**9;
-    uint256 private constant numTokensSellToAddToLiquidity = 10 * 10**9;
+    /*
+    Having minimum token value to reduce the slippage during swap and liquify,
+    reduces the risk of sandwich attack
+    */
+    uint256 private constant numTokensSellToAddToLiquidity = 1000 * 10**9;
     
     event MinTokensBeforeSwapUpdated(uint256 minTokensBeforeSwap);
     event SwapAndLiquifyEnabledUpdated(bool enabled);
