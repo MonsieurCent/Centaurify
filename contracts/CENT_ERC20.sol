@@ -47,6 +47,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
     uint256 private _rTotal = (MAX - (MAX % _tTotal));
     uint256 private _tFeeTotal;
     uint256 public _operatingFeeBalance;
+    uint256 public _liqudityFeeBalance;
 
     string private constant _name = "Centaurify";
     string private constant _symbol = "CENT";
@@ -76,7 +77,6 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
     bool inSwapAndLiquify;
     bool public swapAndLiquifyEnabled = true;
     
-    uint256 public _maxTxAmount = 5000 * 10**9;
     /*
     Having minimum token value to reduce the slippage during swap and liquify,
     reduces the risk of sandwich attack
@@ -478,10 +478,6 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         emit MarketingFeePercentUpdated(_marketingFee);
     }
     
-    function setMaxTxPercent(uint256 maxTxPercent) external onlyOwner() {
-        _maxTxAmount = _tTotal * maxTxPercent / 10**2;
-    }
-    
     function setSwapAndLiquifyEnabled(bool _enabled) external onlyOwner {
         swapAndLiquifyEnabled = _enabled;
         emit SwapAndLiquifyEnabledUpdated(_enabled);
@@ -498,6 +494,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
     function _takeLiquidity(uint256 tLiquidity) internal {
         uint256 currentRate =  _getRate();
         uint256 rLiquidity = tLiquidity * currentRate;
+        _liqudityFeeBalance += tLiquidity;
         _rOwned[address(this)] = _rOwned[address(this)] + rLiquidity;
         if(_isExcluded[address(this)])
             _tOwned[address(this)] = _tOwned[address(this)] + tLiquidity;
@@ -629,23 +626,16 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         // tokens that we need to initiate a swap + liquidity lock?
         // also, don't get caught in a circular liquidity event.
         // also, don't swap & liquify if sender is uniswap pair.
-        uint256 contractTokenBalance = balanceOf(address(this));
-        
-        if(contractTokenBalance >= _maxTxAmount)
-        {
-            contractTokenBalance = _maxTxAmount;
-        }
-        
-        bool overMinTokenBalance = contractTokenBalance >= numTokensSellToAddToLiquidity;
         if (
-            overMinTokenBalance &&
+            _liqudityFeeBalance >= numTokensSellToAddToLiquidity &&
             !inSwapAndLiquify &&
             from != uniswapV2Pair &&
             swapAndLiquifyEnabled
         ) {
-            contractTokenBalance = numTokensSellToAddToLiquidity;
+            uint256 fee = _liqudityFeeBalance;
+            _liqudityFeeBalance = 0;
             //add liquidity
-            swapAndLiquify(contractTokenBalance);
+            swapAndLiquify(_liqudityFeeBalance);
         }
     }
     
