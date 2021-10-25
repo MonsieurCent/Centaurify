@@ -56,7 +56,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
     /**
      * Fee - 10%
      */
-    uint256 public _taxFee = 3;
+    uint256 public _taxFee = 0;
     uint256 private _previousTaxFee = _taxFee;
     
     uint256 public _liquidityFee = 2;
