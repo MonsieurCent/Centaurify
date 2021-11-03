@@ -47,7 +47,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
     uint256 private _rTotal = (MAX - (MAX % _tTotal));
     uint256 private _tFeeTotal;
     uint256 public _operatingFeeBalance;
-    uint256 public _liqudityFeeBalance;
+    uint256 public _liquidityFeeBalance;
 
     string private constant _name = "Centaurify";
     string private constant _symbol = "CENT";
@@ -494,7 +494,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
     function _takeLiquidity(uint256 tLiquidity) internal {
         uint256 currentRate =  _getRate();
         uint256 rLiquidity = tLiquidity * currentRate;
-        _liqudityFeeBalance += tLiquidity;
+        _liquidityFeeBalance += tLiquidity;
         _rOwned[address(this)] = _rOwned[address(this)] + rLiquidity;
         if(_isExcluded[address(this)])
             _tOwned[address(this)] = _tOwned[address(this)] + tLiquidity;
@@ -627,15 +627,15 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         // also, don't get caught in a circular liquidity event.
         // also, don't swap & liquify if sender is uniswap pair.
         if (
-            _liqudityFeeBalance >= numTokensSellToAddToLiquidity &&
+            _liquidityFeeBalance >= numTokensSellToAddToLiquidity &&
             !inSwapAndLiquify &&
             from != uniswapV2Pair &&
             swapAndLiquifyEnabled
         ) {
-            uint256 fee = _liqudityFeeBalance;
-            _liqudityFeeBalance = 0;
+            uint256 fee = _liquidityFeeBalance;
+            _liquidityFeeBalance = 0;
             //add liquidity
-            swapAndLiquify(_liqudityFeeBalance);
+            swapAndLiquify(fee);
         }
     }
     
