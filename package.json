@@ -12,7 +12,7 @@
     "migrate": "truffle migrate",
     "predeploy": "yarn run compile",
     "deploy": "yarn run migrate",
-    "verify": "truffle run verify Centaurify VestingVault TokenSale"
+    "verify": "truffle run verify Centaurify"
   },
   "author": "",
   "license": "ISC",
