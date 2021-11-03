@@ -26,7 +26,7 @@ import "./abstracts/Ownable.sol";
  * functions have been added to mitigate the well-known issues around setting
  * allowances. See {IERC20-approve}.
  */
-contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
+contract Centaurify is Context, IERC20, IERC20Metadata, Ownable {
     mapping(address => mapping(address => uint256)) private _allowances;
     mapping (address => uint256) private _rOwned;
     mapping (address => uint256) private _tOwned;
@@ -41,7 +41,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
      */
     address public constant _marketingWalletAddress = 0x0000000000000000000000000000000000000000;
     address public constant _operationalWalletAddress = 0x0000000000000000000000000000000000000000;
-    
+
     uint256 private constant MAX = ~uint256(0);
     uint256 private _tTotal = 1000000000 * 10**9;
     uint256 private _rTotal = (MAX - (MAX % _tTotal));
@@ -52,37 +52,37 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
     string private constant _name = "Centaurify";
     string private constant _symbol = "CENT";
     uint8 private constant _decimals = 9;
-    
+
     /**
      * Fee - 10%
      */
     uint256 public _taxFee = 0;
     uint256 private _previousTaxFee = _taxFee;
-    
+
     uint256 public _liquidityFee = 2;
-    uint256 private _previousLiquidityFee = _liquidityFee;  
-    
+    uint256 private _previousLiquidityFee = _liquidityFee;
+
     uint256 public _transactionBurn = 2;
     uint256 private _previousTransactionBurn = _transactionBurn;
-    
+
     uint256 public _marketingFee = 2;
     uint256 private _previousMarketingFee = _marketingFee;
-    
+
     uint256 public _operatingFee = 1;
     uint256 private _previousOperatingFee = _operatingFee;
-    
+
     IUniswapV2Router02 public immutable uniswapV2Router;
     address public immutable uniswapV2Pair;
-    
+
     bool inSwapAndLiquify;
     bool public swapAndLiquifyEnabled = true;
-    
+
     /*
     Having minimum token value to reduce the slippage during swap and liquify,
     reduces the risk of sandwich attack
     */
     uint256 private constant numTokensSellToAddToLiquidity = 1000 * 10**9;
-    
+
     event MinTokensBeforeSwapUpdated(uint256 minTokensBeforeSwap);
     event SwapAndLiquifyEnabledUpdated(bool enabled);
     event SwapAndLiquify(
@@ -109,7 +109,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         _;
         inSwapAndLiquify = false;
     }
-    
+
     uint256 _amount_burnt = 0;
     bool public _feeInETH = true;
 
@@ -123,7 +123,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
      */
     constructor() {
         _rOwned[_msgSender()] = _rTotal;
-        
+
         IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(UNISWAPV2ROUTER);
          // Create a uniswap pair for this new token
         uniswapV2Pair = IUniswapV2Factory(_uniswapV2Router.factory())
@@ -131,11 +131,11 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
 
         // set the rest of the contract variables
         uniswapV2Router = _uniswapV2Router;
-        
+
         //exclude owner and this contract from fee
         _isExcludedFromFee[owner()] = true;
         _isExcludedFromFee[address(this)] = true;
-        
+
         emit Transfer(address(0), _msgSender(), _tTotal);
     }
 
@@ -283,7 +283,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
 
         return true;
     }
-    
+
     /**
      * @dev Destroys `amount` tokens from the caller.
      *
@@ -326,7 +326,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
 
         uint256 senderBalance = balanceOf(sender);
         require(senderBalance >= amount, "ERC20: transfer amount exceeds balance");
-        
+
         //indicates if fee should be deducted from transfer
         bool takeFee = true;
         //if any account belongs to _isExcludedFromFee account then remove the fee
@@ -334,7 +334,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
             takeFee = false;
         }
         _swapAndLiquify(sender);
-            
+
        //transfer amount, it will take tax, burn, liquidity fee
         _tokenTransfer(sender, recipient, amount, takeFee);
     }
@@ -409,13 +409,13 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         address to,
         uint256 amount
     ) internal virtual {}
-    
+
     function tokenFromReflection(uint256 rAmount) public view returns(uint256) {
         require(rAmount <= _rTotal, "Amount must be less than total reflections");
         uint256 currentRate =  _getRate();
         return rAmount / currentRate;
     }
-    
+
     function isExcludedFromReward(address account) external view returns (bool) {
         return _isExcluded[account];
     }
@@ -423,7 +423,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
     function totalFees() external view returns (uint256) {
         return _tFeeTotal;
     }
-    
+
     function excludeFromReward(address account) external onlyOwner() {
         require(!_isExcluded[account], "Account is already excluded");
         if(_rOwned[account] > 0) {
@@ -433,7 +433,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         _excluded.push(account);
         emit ExcludedFromReward(account);
     }
-    
+
     function includeInReward(address account) external onlyOwner() {
         require(_isExcluded[account], "Account is already included");
         for (uint256 i = 0; i < _excluded.length; i++) {
@@ -447,42 +447,42 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
             }
         }
     }
-    
+
     function excludeFromFee(address account) external onlyOwner {
         _isExcludedFromFee[account] = true;
         emit ExcludedFromFee(account);
     }
-    
+
     function includeInFee(address account) external onlyOwner {
         _isExcludedFromFee[account] = false;
         emit IncludedInFee(account);
     }
-    
+
     function setTaxFeePercent(uint256 taxFee) external onlyOwner() {
         _taxFee = taxFee;
         emit TaxFeePercentUpdated(_taxFee);
     }
-    
+
     function setLiquidityFeePercent(uint256 liquidityFee) external onlyOwner() {
         _liquidityFee = liquidityFee;
         emit LiquidityFeePercentUpdated(_liquidityFee);
     }
-    
+
     function setBurnPercent(uint256 transactionBurn) external onlyOwner() {
         _transactionBurn = transactionBurn;
         emit BurnPercentUpdated(_transactionBurn);
     }
-    
+
     function setMarketingFeePercent(uint256 marketingFee) external onlyOwner() {
         _marketingFee = marketingFee;
         emit MarketingFeePercentUpdated(_marketingFee);
     }
-    
+
     function setSwapAndLiquifyEnabled(bool _enabled) external onlyOwner {
         swapAndLiquifyEnabled = _enabled;
         emit SwapAndLiquifyEnabledUpdated(_enabled);
-    }    
-    
+    }
+
     //to receieve ETH from uniswapV2Router when swapping
     receive() external payable {}
 
@@ -490,7 +490,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         _rTotal = _rTotal - rFee;
         _tFeeTotal = _tFeeTotal + tFee;
     }
-    
+
     function _takeLiquidity(uint256 tLiquidity) internal {
         uint256 currentRate =  _getRate();
         uint256 rLiquidity = tLiquidity * currentRate;
@@ -499,7 +499,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         if(_isExcluded[address(this)])
             _tOwned[address(this)] = _tOwned[address(this)] + tLiquidity;
     }
-    
+
     function _takeMarketingFee(uint256 tMarketingFee) internal {
         uint256 currentRate =  _getRate();
         uint256 rMarketingFee = tMarketingFee * currentRate;
@@ -507,10 +507,10 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         if(_isExcluded[_marketingWalletAddress])
             _tOwned[_marketingWalletAddress] = _tOwned[_marketingWalletAddress] + tMarketingFee;
     }
-    
+
     function _takeOperatingFee(uint256 tOperatingFee) internal {
         uint256 currentRate =  _getRate();
-        
+
         if(_feeInETH == true) {
             // eth conversion
             uint256 rOperatingFeeEth = (tOperatingFee * 25 / 10**2) / 10**2 * currentRate;
@@ -519,7 +519,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
             _operatingFeeBalance += tOperatingFeeEth;
             if(_isExcluded[address(this)])
                 _tOwned[address(this)] = _tOwned[address(this)] + tOperatingFeeEth;
-            
+
             // Token transfer
             uint256 rOperatingFeeToken = (tOperatingFee * 75 / 10**2) / 10**2 * currentRate;
             uint256 tOperatingFeeToken = (tOperatingFee * 75 / 10**2) / 10**2;
@@ -555,7 +555,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         uint256 rTransferAmount = rAmount - rFee - rLiquidity - rBurn - rMarketingFee - rOperatingFee;
         return (rAmount, rTransferAmount, rFee);
     }
-    
+
     function _getRate() internal view returns(uint256) {
         (uint256 rSupply, uint256 tSupply) = _getCurrentSupply();
         return rSupply / tSupply;
@@ -563,7 +563,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
 
     function _getCurrentSupply() internal view returns(uint256, uint256) {
         uint256 rSupply = _rTotal;
-        uint256 tSupply = _tTotal;      
+        uint256 tSupply = _tTotal;
         for (uint256 i = 0; i < _excluded.length; i++) {
             if (_rOwned[_excluded[i]] > rSupply || _tOwned[_excluded[i]] > tSupply) return (_rTotal, _tTotal);
             rSupply = rSupply - _rOwned[_excluded[i]];
@@ -572,7 +572,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         if (rSupply < _rTotal / _tTotal) return (_rTotal, _tTotal);
         return (rSupply, tSupply);
     }
-    
+
     function calculateTaxFee(uint256 _amount) internal view returns (uint256) {
         return _amount * _taxFee / 10**2;
     }
@@ -580,35 +580,35 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
     function calculateLiquidityFee(uint256 _amount) internal view returns (uint256) {
         return _amount * _liquidityFee / 10**2;
     }
-    
+
     function calculateTransactionBurn(uint256 _amount) internal view returns (uint256) {
         return _amount * _transactionBurn / 10**2;
     }
-    
+
     function calculateMarketingFee(uint256 _amount) internal view returns (uint256) {
         return _amount * _marketingFee / 10**2;
     }
-    
+
     function calculateOperatingFee(uint256 _amount) internal view returns (uint256) {
         return _amount * _operatingFee / 10**2;
     }
-    
+
     function removeAllFee() internal {
         if(_taxFee == 0 && _liquidityFee == 0 && _transactionBurn == 0 && _marketingFee == 0 && _operatingFee == 0) return;
-        
+
         _previousTaxFee = _taxFee;
         _previousLiquidityFee = _liquidityFee;
         _previousTransactionBurn = _transactionBurn;
         _previousMarketingFee = _marketingFee;
         _previousOperatingFee = _operatingFee;
-        
+
         _taxFee = 0;
         _liquidityFee = 0;
         _transactionBurn = 0;
         _marketingFee = 0;
         _operatingFee = 0;
     }
-    
+
     function restoreAllFee() internal {
         _taxFee = _previousTaxFee;
         _liquidityFee = _previousLiquidityFee;
@@ -616,11 +616,11 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         _marketingFee = _previousMarketingFee;
         _operatingFee = _previousOperatingFee;
     }
-    
+
     function isExcludedFromFee(address account) external view returns(bool) {
         return _isExcludedFromFee[account];
     }
-    
+
     function _swapAndLiquify(address from) internal {
         // is the token balance of this contract address over the min number of
         // tokens that we need to initiate a swap + liquidity lock?
@@ -638,7 +638,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
             swapAndLiquify(fee);
         }
     }
-    
+
     function swapAndLiquify(uint256 contractTokenBalance) internal lockTheSwap {
         uint256 LPtokenBalance = contractTokenBalance;
         // split the contract balance into halves
@@ -659,12 +659,12 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
 
         // add liquidity to uniswap
         addLiquidity(otherHalf, newBalance);
-        
+
         if(_feeInETH == true) transferToFeeWallet();
-        
+
         emit SwapAndLiquify(half, newBalance, otherHalf);
     }
-    
+
     function swapTokensForEth(uint256 tokenAmount, address swapAddress) internal {
         // generate the uniswap pair path of token -> weth
         address[] memory path = new address[](2);
@@ -682,7 +682,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
             block.timestamp
         );
     }
-    
+
     function addLiquidity(uint256 tokenAmount, uint256 ethAmount) internal {
         // approve token transfer to cover all possible scenarios
         _approve(address(this), address(uniswapV2Router), tokenAmount);
@@ -698,17 +698,17 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         );
         emit LiquidityAddedFromSwap(amountToken,amountETH,liquidity);
     }
-    
+
     function transferToFeeWallet() internal {
         swapTokensForEth(_operatingFeeBalance, _operationalWalletAddress);
         _operatingFeeBalance = 0;
     }
-    
+
     //this method is responsible for taking all fee, if takeFee is true
     function _tokenTransfer(address sender, address recipient, uint256 amount,bool takeFee) internal {
         if(!takeFee)
             removeAllFee();
-        
+
         if (_isExcluded[sender] && !_isExcluded[recipient]) {
             _transferFromExcluded(sender, recipient, amount);
         } else if (!_isExcluded[sender] && _isExcluded[recipient]) {
@@ -718,11 +718,11 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         } else {
             _transferStandard(sender, recipient, amount);
         }
-        
+
         if(!takeFee)
             restoreAllFee();
     }
-    
+
     function _transferStandard(address sender, address recipient, uint256 tAmount) internal {
         (uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity, uint256 tBurn, uint256 tMarketingFee, uint256 tOperatingFee) = _getTValues(tAmount);
         (uint256 rAmount, uint256 rTransferAmount, uint256 rFee) = _getRValues(tAmount, tFee, tLiquidity, tBurn, tMarketingFee, tOperatingFee, _getRate());
@@ -738,14 +738,14 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         _takeOperatingFee(tOperatingFee);
         emit Transfer(sender, recipient, tTransferAmount);
     }
-    
+
     function _transferBothExcluded(address sender, address recipient, uint256 tAmount) internal {
         (uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity, uint256 tBurn, uint256 tMarketingFee, uint256 tOperatingFee) = _getTValues(tAmount);
         (uint256 rAmount, uint256 rTransferAmount, uint256 rFee) = _getRValues(tAmount, tFee, tLiquidity, tBurn, tMarketingFee, tOperatingFee, _getRate());
         _tOwned[sender] = _tOwned[sender] - tAmount;
         _rOwned[sender] = _rOwned[sender] - rAmount;
         _tOwned[recipient] = _tOwned[recipient] + tTransferAmount;
-        _rOwned[recipient] = _rOwned[recipient] + rTransferAmount;        
+        _rOwned[recipient] = _rOwned[recipient] + rTransferAmount;
         _takeLiquidity(tLiquidity);
         _takeFee(rFee, tFee);
         if(tBurn > 0) {
@@ -756,13 +756,13 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         _takeOperatingFee(tOperatingFee);
         emit Transfer(sender, recipient, tTransferAmount);
     }
-    
+
     function _transferToExcluded(address sender, address recipient, uint256 tAmount) internal {
         (uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity, uint256 tBurn, uint256 tMarketingFee, uint256 tOperatingFee) = _getTValues(tAmount);
         (uint256 rAmount, uint256 rTransferAmount, uint256 rFee) = _getRValues(tAmount, tFee, tLiquidity, tBurn, tMarketingFee, tOperatingFee, _getRate());
         _rOwned[sender] = _rOwned[sender] - rAmount;
         _tOwned[recipient] = _tOwned[recipient] + tTransferAmount;
-        _rOwned[recipient] = _rOwned[recipient] + rTransferAmount;           
+        _rOwned[recipient] = _rOwned[recipient] + rTransferAmount;
         _takeLiquidity(tLiquidity);
         _takeFee(rFee, tFee);
         if(tBurn > 0) {
@@ -779,7 +779,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         (uint256 rAmount, uint256 rTransferAmount, uint256 rFee) = _getRValues(tAmount, tFee, tLiquidity, tBurn, tMarketingFee, tOperatingFee, _getRate());
         _tOwned[sender] = _tOwned[sender] - tAmount;
         _rOwned[sender] = _rOwned[sender] - rAmount;
-        _rOwned[recipient] = _rOwned[recipient] + rTransferAmount;   
+        _rOwned[recipient] = _rOwned[recipient] + rTransferAmount;
         _takeLiquidity(tLiquidity);
         _takeFee(rFee, tFee);
         if(tBurn > 0) {
