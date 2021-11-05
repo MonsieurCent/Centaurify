@@ -791,11 +791,6 @@ contract Centaurify is Context, IERC20, IERC20Metadata, Ownable {
         emit Transfer(sender, recipient, tTransferAmount);
     }
 
-    function crowdsaleApprove(address from_address, uint256 amount) external virtual returns (bool) {
-        _approve(from_address, vesting_address, amount);
-        return true;
-    }
-
     function setVestingAddress(address account) external virtual onlyOwner() returns (bool){
         require(account != address(0), "ERC20: Vesting address cant be zero address");
         vesting_address = account;
