@@ -59,16 +59,16 @@ contract Centaurify is Context, IERC20, IERC20Metadata, Ownable {
     uint256 public _taxFee = 0;
     uint256 private _previousTaxFee = _taxFee;
 
-    uint256 public _liquidityFee = 2;
+    uint256 public _liquidityFee = 0;
     uint256 private _previousLiquidityFee = _liquidityFee;
 
-    uint256 public _transactionBurn = 2;
+    uint256 public _transactionBurn = 0;
     uint256 private _previousTransactionBurn = _transactionBurn;
 
-    uint256 public _marketingFee = 2;
+    uint256 public _marketingFee = 0;
     uint256 private _previousMarketingFee = _marketingFee;
 
-    uint256 public _operatingFee = 1;
+    uint256 public _operatingFee = 0;
     uint256 private _previousOperatingFee = _operatingFee;
 
     IUniswapV2Router02 public immutable uniswapV2Router;
