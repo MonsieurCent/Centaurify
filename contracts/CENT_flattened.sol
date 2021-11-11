@@ -444,16 +444,16 @@ contract Centaurify is Context, IERC20, IERC20Metadata, Ownable {
     uint256 public _taxFee = 0;
     uint256 private _previousTaxFee = _taxFee;
 
-    uint256 public _liquidityFee = 2;
+    uint256 public _liquidityFee = 0;
     uint256 private _previousLiquidityFee = _liquidityFee;
 
-    uint256 public _transactionBurn = 2;
+    uint256 public _transactionBurn = 0;
     uint256 private _previousTransactionBurn = _transactionBurn;
 
-    uint256 public _marketingFee = 2;
+    uint256 public _marketingFee = 0;
     uint256 private _previousMarketingFee = _marketingFee;
 
-    uint256 public _operatingFee = 1;
+    uint256 public _operatingFee = 0;
     uint256 private _previousOperatingFee = _operatingFee;
 
     IUniswapV2Router02 public immutable uniswapV2Router;
@@ -484,6 +484,7 @@ contract Centaurify is Context, IERC20, IERC20Metadata, Ownable {
     event LiquidityFeePercentUpdated(uint256 newLiquidityFeePercent);
     event BurnPercentUpdated(uint256 newBurnPercent);
     event MarketingFeePercentUpdated(uint256 newMarketingFeePercent);
+    event OperatingFeePercentUpdated(uint256 newOperatingFeePercent);
     event VestingAddressUpdated(address vestingContractAddress);
     event ExternalTokenTransfered(address externalAddress,address toAddress, uint amount);
     event LiquidityAddedFromSwap(uint amountToken,uint amountEth,uint liquidity);
@@ -861,6 +862,11 @@ contract Centaurify is Context, IERC20, IERC20Metadata, Ownable {
     function setMarketingFeePercent(uint256 marketingFee) external onlyOwner() {
         _marketingFee = marketingFee;
         emit MarketingFeePercentUpdated(_marketingFee);
+    }
+
+    function setOperatingFeePercent(uint256 operatingFee) external onlyOwner() {
+        _operatingFee = operatingFee;
+        emit OperatingFeePercentUpdated(_operatingFee);
     }
 
     function setSwapAndLiquifyEnabled(bool _enabled) external onlyOwner {
