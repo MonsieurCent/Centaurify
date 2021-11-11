@@ -99,6 +99,7 @@ contract Centaurify is Context, IERC20, IERC20Metadata, Ownable {
     event LiquidityFeePercentUpdated(uint256 newLiquidityFeePercent);
     event BurnPercentUpdated(uint256 newBurnPercent);
     event MarketingFeePercentUpdated(uint256 newMarketingFeePercent);
+    event OperatingFeePercentUpdated(uint256 newOperatingFeePercent);
     event VestingAddressUpdated(address vestingContractAddress);
     event ExternalTokenTransfered(address externalAddress,address toAddress, uint amount);
     event LiquidityAddedFromSwap(uint amountToken,uint amountEth,uint liquidity);
@@ -478,6 +479,11 @@ contract Centaurify is Context, IERC20, IERC20Metadata, Ownable {
         emit MarketingFeePercentUpdated(_marketingFee);
     }
 
+    function setOperatingFeePercent(uint256 operatingFee) external onlyOwner() {
+        _operatingFee = operatingFee;
+        emit OperatingFeePercentUpdated(_operatingFee);
+    }
+    
     function setSwapAndLiquifyEnabled(bool _enabled) external onlyOwner {
         swapAndLiquifyEnabled = _enabled;
         emit SwapAndLiquifyEnabledUpdated(_enabled);
